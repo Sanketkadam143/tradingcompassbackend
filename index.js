@@ -14,12 +14,12 @@ var database;
 
 app.use(
   cors({
-    origin: "https://tradingcompass.herokuapp.com/",
+    origin: "*",
   })
 );
 
 app.get("/api/nifty", async (req, res) => {
-   await database.collection("nifty options").find({}).toArray((err, result) => {
+   await database.collection("nifty options").find({}).sort({_id:-1}).limit(1).toArray((err, result) => {
     try {
       res.send(result);
     } catch (err) {}
@@ -28,7 +28,7 @@ app.get("/api/nifty", async (req, res) => {
 });
 
 app.get("/api/banknifty", async (req, res) => {
-    await database.collection("bank nifty options").find({}).toArray((err, result) => {
+    await database.collection("bank nifty options").find({}).sort({_id:-1}).limit(1).toArray((err, result) => {
         try {
           res.send(result);
         } catch (err) {}
@@ -36,7 +36,7 @@ app.get("/api/banknifty", async (req, res) => {
 });
 
 app.get("/api/stocks", async (req, res) => {
-    await database.collection("stocks").find({}).toArray((err, result) => {
+    await database.collection("stocks").find({}).sort({_id:-1}).limit(1).toArray((err, result) => {
         try {
           res.send(result);
         } catch (err) {}
@@ -44,7 +44,7 @@ app.get("/api/stocks", async (req, res) => {
 });
 
 app.get("/api/liveprice", async (req, res) => {
-    await database.collection("index prices").find({}).toArray((err, result) => {
+    await database.collection("index prices").find({}).sort({_id:-1}).limit(1).toArray((err, result) => {
         try {
           res.send(result);
         } catch (err) {}
