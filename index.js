@@ -7,7 +7,7 @@ dotenv.config();
 
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 const CONNECTION_URL = process.env.CONNECTION_URL;
 var database;
 
