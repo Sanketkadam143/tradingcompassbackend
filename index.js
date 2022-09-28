@@ -7,7 +7,7 @@ dotenv.config();
 
 
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 const CONNECTION_URL = process.env.CONNECTION_URL;
 var database;
 
@@ -21,7 +21,9 @@ app.use(
 app.get("/api/nifty", async (req, res) => {
    await database.collection("nifty options").find({}).sort({_id:-1}).limit(1).toArray((err, result) => {
     try {
-      res.send(result);
+      const data=result[0].datedata;
+      const recent=data[data.length-1];
+      res.send(recent);
     } catch (err) {}
   });
  
@@ -30,7 +32,9 @@ app.get("/api/nifty", async (req, res) => {
 app.get("/api/banknifty", async (req, res) => {
     await database.collection("bank nifty options").find({}).sort({_id:-1}).limit(1).toArray((err, result) => {
         try {
-          res.send(result);
+          const data=result[0].datedata;
+          const recent=data[data.length-1];
+          res.send(recent);
         } catch (err) {}
       });
 });
