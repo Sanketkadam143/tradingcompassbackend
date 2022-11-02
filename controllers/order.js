@@ -8,7 +8,7 @@ export const getOrderBook = async (req, res) => {
   try {
     const userDetails = await User.find({ _id: userId });
 
-    const orderBook = userDetails[0].orderDetails;
+    const orderBook = userDetails[0]?.orderDetails;
 
     res.status(200).json(orderBook);
   } catch (error) {

@@ -4,8 +4,9 @@ import dotenv from "dotenv";
 import { passwordStrength } from "check-password-strength";
 import validator from "validator";
 import { OAuth2Client } from "google-auth-library";
-
 import User from "../models/user.js";
+import OTP from "../models/otp.js";
+import sendmail from "./sendmail.js";
 
 dotenv.config();
 
@@ -13,16 +14,15 @@ const JWTKEY = process.env.JWTKEY;
 const JWT_EXPIRE = process.env.JWT_EXPIRE;
 const PASSKEY = process.env.PASSKEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+var userName;
 
 //manual signin
 
 export const signin = async (req, res) => {
   const { email, password } = req.body;
-  // console.log(req.body)
   try {
-    
-    const existingUser = await User.findOne({ email} );
-  
+    const existingUser = await User.findOne({ email });
+
     if (!existingUser)
       return res.status(404).json({ message: "User doesn't exist" });
 
@@ -40,9 +40,11 @@ export const signin = async (req, res) => {
       { expiresIn: JWT_EXPIRE }
     );
 
-    res
-      .status(200)
-      .json({ token, result: existingUser,successMessage:"You are Successfully Logged in" });
+    res.status(200).json({
+      token,
+      result: existingUser,
+      successMessage: "You are Successfully Logged in",
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -51,7 +53,8 @@ export const signin = async (req, res) => {
 //manual signup
 
 export const signup = async (req, res) => {
-  const { email, password, confirmPassword, firstName, lastName } = req.body;
+  const { email, password, confirmPassword, firstName, lastName, otp } =
+    req.body;
 
   const passMusthave = ["lowercase", "uppercase", "symbol", "number"];
 
@@ -62,6 +65,7 @@ export const signup = async (req, res) => {
 
   const strength = passwordStrength(password).value;
   const length = passwordStrength(password).length;
+  userName = firstName + " " + lastName;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -94,22 +98,66 @@ export const signup = async (req, res) => {
     if (password !== confirmPassword)
       return res.status(400).json({ message: "Passwords Don't Match" });
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    if (!otp) {
+      var digits = "0123456789";
+      let generatedOtp = "";
+      for (let i = 0; i < 4; i++) {
+        generatedOtp += digits[Math.floor(Math.random() * 10)];
+      }
+      const hashedOtp = await bcrypt.hash(generatedOtp, 12);
 
-    const result = await User.create({
-      email,
-      password: hashedPassword,
-      name: `${firstName} ${lastName}`,
-      picture: "",
-    });
+      await OTP.updateOne(
+        { email: email },
+        {
+          email: email,
+          OTP: hashedOtp,
+        },
+        { upsert: true }
+      );
 
-    const token = jwt.sign({ email: result.email, id: result._id }, JWTKEY, {
-      expiresIn: JWT_EXPIRE,
-    });
+      await sendmail({ userName, email, type: "signUpOtp", generatedOtp });
 
-    res.status(200).json({ result, token,successMessage:"Account created Successfully" });
+      return res.json({ successMessage: "OTP Sent on registered Email" });
+    }
+
+    if (otp) {
+      const tempDetails = await OTP.findOne({ email });
+
+      const isOtpCorrect = await bcrypt.compare(otp, tempDetails?.OTP);
+
+      if (!isOtpCorrect)
+        return res.status(400).json({ message: "Invalid OTP" });
+
+      if (isOtpCorrect) {
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const result = await User.create({
+          email,
+          password: hashedPassword,
+          name: `${firstName} ${lastName}`,
+          picture: "",
+        });
+
+        const token = jwt.sign(
+          { email: result.email, id: result._id },
+          JWTKEY,
+          {
+            expiresIn: JWT_EXPIRE,
+          }
+        );
+
+        await sendmail({ userName, email, type: "signUp" });
+
+        res.status(200).json({
+          result,
+          token,
+          successMessage: "Account created Successfully",
+        });
+      }
+    }
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
+    console.log(error);
   }
 };
 
@@ -117,15 +165,11 @@ export const signup = async (req, res) => {
 
 export const googlesignin = async (req, res) => {
   const googleToken = req.body.credential;
-
-  const client = new OAuth2Client(
-    GOOGLE_CLIENT_ID
-  );
+  const client = new OAuth2Client(GOOGLE_CLIENT_ID);
   client
     .verifyIdToken({
       idToken: googleToken,
-      audience:
-      GOOGLE_CLIENT_ID,
+      audience: GOOGLE_CLIENT_ID,
     })
     .then((response) => {
       const {
@@ -157,11 +201,11 @@ export const googlesignin = async (req, res) => {
             return res.json({
               token,
               result: { name, email, orderDetails, picture, _id },
-              successMessage:"Login with Google successful"
+              successMessage: "Login with Google successful",
             });
           } else {
-            let password = firstName +PASSKEY;
-        
+            let password = firstName + PASSKEY;
+
             bcrypt.hash(password, 12).then((hashedPassword) => {
               const user = new User({
                 name,
@@ -181,10 +225,17 @@ export const googlesignin = async (req, res) => {
 
                 const { email, name, orderDetails, picture, _id } = newUser;
 
+                sendmail(
+                 { userName:name,
+                  email,
+                  type :"googleSignUp",
+                  password}
+                );
+
                 return res.json({
                   token,
                   result: { name, email, orderDetails, picture, _id },
-                  successMessage:` Account successfully created! Your auto generated password is ${password}`,
+                  successMessage: `Account successfully created! Check Your Email`,
                 });
               });
             });
@@ -196,6 +247,91 @@ export const googlesignin = async (req, res) => {
     })
     .catch((err) => {
       console.log(err);
-      return res.status(500).json({ message: "Server Error" });
+      return res.status(500).json({ message: "Server Error,Try again later" });
     });
+};
+
+//reset Password
+
+export const resetpassword = async (req, res) => {
+  const { email, password, confirmPassword, otp } = req.body;
+  const existingUser = await User.findOne({ email });
+  userName = existingUser?.name;
+
+  try {
+    if (!existingUser)
+      return res.status(400).json({ message: "User don't exist" });
+
+    if (!otp && !password) {
+      var digits = "0123456789";
+      let generatedOtp = "";
+      for (let i = 0; i < 4; i++) {
+        generatedOtp += digits[Math.floor(Math.random() * 10)];
+      }
+      const hashedOtp = await bcrypt.hash(generatedOtp, 12);
+
+      await OTP.updateOne(
+        { email: existingUser.email },
+        {
+          email: existingUser.email,
+          OTP: hashedOtp,
+        },
+        { upsert: true }
+      );
+
+      await sendmail({ userName, email, type: "resetPassword", generatedOtp });
+
+      return res.json({ successMessage: "OTP Sent on registered Email" });
+    }
+
+    if (otp && !password) {
+      const tempDetails = await OTP.findOne({ email });
+
+      const isOtpCorrect = await bcrypt.compare(otp, tempDetails?.OTP);
+
+      if (isOtpCorrect) return res.json({ successMessage: "OTP Verified" });
+
+      if (!isOtpCorrect)
+        return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    if (password) {
+      const passMusthave = ["lowercase", "uppercase", "symbol", "number"];
+
+      const passContains = passwordStrength(password).contains;
+
+      var addPass = [];
+      passMusthave.map((x) => !passContains.includes(x) && addPass.push(x));
+
+      const strength = passwordStrength(password).value;
+      const length = passwordStrength(password).length;
+
+      if (length < 8)
+        return res
+          .status(400)
+          .json({ message: `Add password of length greater than 8` });
+
+      if (strength === "Too weak" || strength === "Weak")
+        return res.status(400).json({
+          message: `Entered Password is ${strength} consider adding ${addPass.map(
+            (x) => x
+          )}`,
+        });
+
+      if (password !== confirmPassword)
+        return res.status(400).json({ message: "Passwords Don't Match" });
+
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      User.findByIdAndUpdate(
+        { _id: existingUser._id },
+        { $set: { password: hashedPassword } }
+      ).exec((err, res) => {});
+
+      return res.json({ successMessage: "Password Reset Successfully" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
+    console.log(error);
+  }
 };
