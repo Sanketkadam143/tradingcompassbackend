@@ -94,6 +94,7 @@ app.get("/api/liveprice", async (req, res) => {
 });
 
 try {
+  var date=new Date();
   if (date.getDay() !== 0 && date.getDay() !== 6) {
     if (date.getHours() >= 9 && date.getHours() <= 16) {
       setInterval(() => {
