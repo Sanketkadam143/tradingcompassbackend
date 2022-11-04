@@ -5,9 +5,13 @@ import cors from "cors";
 import compression from "compression";
 import { MongoClient } from "mongodb";
 import * as dotenv from "dotenv";
-import apisRoutes from './routes/apis.js';
-import userRoutes from './routes/users.js';
+import apisRoutes from "./routes/apis.js";
+import userRoutes from "./routes/users.js";
 import mongoose from "mongoose";
+import { getNiftyData } from "./ApiResponse/nifty.js";
+import { getbankNiftyData } from "./ApiResponse/banknifty.js";
+import { getLivePrice } from "./ApiResponse/livePrice.js";
+import { getStocks } from "./ApiResponse/stocks.js";
 
 dotenv.config();
 
@@ -15,23 +19,23 @@ const PORT = process.env.PORT || 5000;
 const CONNECTION_URL = process.env.CONNECTION_URL;
 var database;
 
-app.use(bodyParser.json({limit:"30mb",extended:true}));
-app.use(bodyParser.urlencoded({limit:"30mb",extended:true}));
+app.use(bodyParser.json({ limit: "30mb", extended: true }));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 app.use(
   cors({
     origin: "*",
   })
 );
-app.use(compression({
-  level:9,
-  threshold: 0,
+app.use(
+  compression({
+    level: 9,
+    threshold: 0,
+  })
+);
 
-}))
-
-app.use('/order',apisRoutes);
-app.use('/users',userRoutes);
-
+app.use("/order", apisRoutes);
+app.use("/users", userRoutes);
 
 app.get("/api/nifty", async (req, res) => {
   await database
@@ -63,7 +67,6 @@ app.get("/api/banknifty", async (req, res) => {
     });
 });
 
-
 app.get("/api/stocks", async (req, res) => {
   await database
     .collection("stocks")
@@ -90,12 +93,27 @@ app.get("/api/liveprice", async (req, res) => {
     });
 });
 
+try {
+  if (date.getDay() !== 0 && date.getDay() !== 6) {
+    if (date.getHours() >= 9 && date.getHours() <= 16) {
+      setInterval(() => {
+        getNiftyData();
+        getbankNiftyData();
+        getLivePrice();
+        getStocks();
+      }, 20000);
+    }
+  }
+} catch (error) {
+  console.log(error);
+}
+
 mongoose.connect(CONNECTION_URL);
 
 MongoClient.connect(CONNECTION_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  compressors: ["snappy"]
+  compressors: ["snappy"],
 })
   .then(
     (result) => (database = result.db("test")),
@@ -104,6 +122,3 @@ MongoClient.connect(CONNECTION_URL, {
     )
   )
   .catch((error) => console.log(`${error} did not connect`));
-
-
- 
