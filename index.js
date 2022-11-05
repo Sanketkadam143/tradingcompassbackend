@@ -94,17 +94,21 @@ app.get("/api/liveprice", async (req, res) => {
 });
 
 try {
-  var date=new Date();
-  if (date.getDay() !== 0 && date.getDay() !== 6) {
-    if (date.getHours() >= 9 && date.getHours() <= 16) {
-      setInterval(() => {
+  setInterval(() => {
+    //reparsing date for setting timezone
+    var ist = new Date().toLocaleString(undefined, {
+      timeZone: "Asia/Kolkata",
+    });
+    var date = new Date(ist);
+    if (date.getDay() !== 0 && date.getDay() !== 6) {
+      if (date.getHours() >= 9 && date.getHours() <= 15) {
         getNiftyData();
         getbankNiftyData();
         getLivePrice();
         getStocks();
-      }, 20000);
+      }
     }
-  }
+  }, 20000);
 } catch (error) {
   console.log(error);
 }
