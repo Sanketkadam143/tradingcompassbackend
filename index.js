@@ -101,7 +101,7 @@ try {
     });
     var date = new Date(ist);
     if (date.getDay() !== 0 && date.getDay() !== 6) {
-      if (date.getHours() >= 9 && date.getHours() <= 20) {
+      if (date.getHours() >= 9 && date.getHours() <= 15) {
         
         getNiftyData();
 
