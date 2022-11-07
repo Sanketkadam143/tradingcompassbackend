@@ -136,6 +136,6 @@ export async function getNiftyData() {
       }
     })
     .catch((error) => {
-      console.log(error);
+      console.log("no response for nifty");
     });
 }

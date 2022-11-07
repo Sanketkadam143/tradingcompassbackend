@@ -52,6 +52,6 @@ export async function getLivePrice() {
       }
     })
     .catch((error) => {
-      console.log(error);
+      console.log("no response for indexprice");
     });
 }

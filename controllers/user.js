@@ -295,7 +295,7 @@ export const resetpassword = async (req, res) => {
         return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    if (password) {
+    if (otp && password) {
       const passMusthave = ["lowercase", "uppercase", "symbol", "number"];
 
       const passContains = passwordStrength(password).contains;

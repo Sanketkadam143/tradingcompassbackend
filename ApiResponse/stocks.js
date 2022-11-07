@@ -70,6 +70,6 @@ export async function getStocks() {
       }
     })
     .catch((error) => {
-      console.log(error);
+      console.log("no response for stock");
     });
 }

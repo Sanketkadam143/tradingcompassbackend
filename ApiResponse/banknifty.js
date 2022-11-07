@@ -136,6 +136,6 @@ export async function getbankNiftyData() {
       }
     })
     .catch((error) => {
-      console.log(error);
+      console.log("no response for bank");
     });
 }

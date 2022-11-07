@@ -101,11 +101,21 @@ try {
     });
     var date = new Date(ist);
     if (date.getDay() !== 0 && date.getDay() !== 6) {
-      if (date.getHours() >= 9 && date.getHours() <= 15) {
+      if (date.getHours() >= 9 && date.getHours() <= 20) {
+        
         getNiftyData();
-        getbankNiftyData();
-        getLivePrice();
-        getStocks();
+
+        setTimeout(() => {
+          getbankNiftyData();
+        }, 5000);
+
+        setTimeout(() => {
+          getLivePrice();
+        }, 10000);
+
+        setTimeout(() => {
+          getStocks();
+        }, 15000);
       }
     }
   }, 20000);
