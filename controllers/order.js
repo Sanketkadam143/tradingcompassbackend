@@ -21,16 +21,18 @@ export const placeOrder = async (req, res) => {
   const userId = req.userId;
   const orderDetails = req.body;
   const newOrder = new order(orderDetails);
-  const orderName =
-  orderDetails.indexName +
-  " " +
-  orderDetails.stp +
-  " " +
-  orderDetails.optionType +
-  " " +
-  (orderDetails.orderType === "optionBuying"
-    ? "Option Buying"
-    : "Option Selling");
+  var orderName =
+    orderDetails.symbol === "NIFTY" || orderDetails.symbol === "BANKNIFTY"
+      ? orderDetails.symbol +
+        " " +
+        orderDetails?.stp +
+        " " +
+        orderDetails?.optionType +
+        " " +
+        (orderDetails.orderType === "optionBuying"
+          ? "Option Buying"
+          : "Option Selling")
+      : orderDetails.symbol;
 
   try {
     await User.findByIdAndUpdate(
@@ -63,17 +65,19 @@ export const updateOrder = async (req, res) => {
 
     const orderDetails = exitPosition[0].orderDetails[0];
     const updatedPosition = { ...orderDetails, ...details };
-
-    const orderName =
-    orderDetails.indexName +
-    " " +
-    orderDetails.stp +
-    " " +
-    orderDetails.optionType +
-    " " +
-    (orderDetails.orderType === "optionBuying"
-      ? "Option Buying"
-      : "Option Selling");
+  
+    var orderName =
+    orderDetails.symbol === "NIFTY" || orderDetails.symbol === "BANKNIFTY"
+      ? orderDetails.symbol +
+        " " +
+        orderDetails?.stp +
+        " " +
+        orderDetails?.optionType +
+        " " +
+        (orderDetails.orderType === "optionBuying"
+          ? "Option Buying"
+          : "Option Selling")
+      : orderDetails.symbol;
 
     await User.findOneAndUpdate(
       { _id: userId, orderDetails: { $elemMatch: { _id: id } } },
@@ -103,16 +107,18 @@ export const deleteOrder = async (req, res) => {
 
       const orderDetails = position[0].orderDetails[0];
   
-      const orderName =
-      orderDetails.indexName +
-      " " +
-      orderDetails.stp +
-      " " +
-      orderDetails.optionType +
-      " " +
-      (orderDetails.orderType === "optionBuying"
-        ? "Option Buying"
-        : "Option Selling");
+      var orderName =
+      orderDetails.symbol === "NIFTY" || orderDetails.symbol === "BANKNIFTY"
+        ? orderDetails.symbol +
+          " " +
+          orderDetails?.stp +
+          " " +
+          orderDetails?.optionType +
+          " " +
+          (orderDetails.orderType === "optionBuying"
+            ? "Option Buying"
+            : "Option Selling")
+        : orderDetails.symbol;
 
 
     await User.findByIdAndUpdate(

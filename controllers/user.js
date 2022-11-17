@@ -225,12 +225,12 @@ export const googlesignin = async (req, res) => {
 
                 const { email, name, orderDetails, picture, _id } = newUser;
 
-                sendmail(
-                 { userName:name,
+                sendmail({
+                  userName: name,
                   email,
-                  type :"googleSignUp",
-                  password}
-                );
+                  type: "googleSignUp",
+                  password,
+                });
 
                 return res.json({
                   token,
@@ -262,7 +262,7 @@ export const resetpassword = async (req, res) => {
     if (!existingUser)
       return res.status(400).json({ message: "User don't exist" });
 
-    if (!otp && !password) {
+    if (!otp) {
       var digits = "0123456789";
       let generatedOtp = "";
       for (let i = 0; i < 4; i++) {
@@ -284,51 +284,53 @@ export const resetpassword = async (req, res) => {
       return res.json({ successMessage: "OTP Sent on registered Email" });
     }
 
-    if (otp && !password) {
+    if (otp && email) {
       const tempDetails = await OTP.findOne({ email });
 
       const isOtpCorrect = await bcrypt.compare(otp, tempDetails?.OTP);
 
-      if (isOtpCorrect) return res.json({ successMessage: "OTP Verified" });
-
       if (!isOtpCorrect)
         return res.status(400).json({ message: "Invalid OTP" });
-    }
 
-    if (otp && password) {
-      const passMusthave = ["lowercase", "uppercase", "symbol", "number"];
+      if (!password) {
+        if (isOtpCorrect) return res.json({ successMessage: "OTP Verified" });
+      }
 
-      const passContains = passwordStrength(password).contains;
+      if (isOtpCorrect && password) {
+        const passMusthave = ["lowercase", "uppercase", "symbol", "number"];
 
-      var addPass = [];
-      passMusthave.map((x) => !passContains.includes(x) && addPass.push(x));
+        const passContains = passwordStrength(password).contains;
 
-      const strength = passwordStrength(password).value;
-      const length = passwordStrength(password).length;
+        var addPass = [];
+        passMusthave.map((x) => !passContains.includes(x) && addPass.push(x));
 
-      if (length < 8)
-        return res
-          .status(400)
-          .json({ message: `Add password of length greater than 8` });
+        const strength = passwordStrength(password).value;
+        const length = passwordStrength(password).length;
 
-      if (strength === "Too weak" || strength === "Weak")
-        return res.status(400).json({
-          message: `Entered Password is ${strength} consider adding ${addPass.map(
-            (x) => x
-          )}`,
-        });
+        if (length < 8)
+          return res
+            .status(400)
+            .json({ message: `Add password of length greater than 8` });
 
-      if (password !== confirmPassword)
-        return res.status(400).json({ message: "Passwords Don't Match" });
+        if (strength === "Too weak" || strength === "Weak")
+          return res.status(400).json({
+            message: `Entered Password is ${strength} consider adding ${addPass.map(
+              (x) => x
+            )}`,
+          });
 
-      const hashedPassword = await bcrypt.hash(password, 12);
+        if (password !== confirmPassword)
+          return res.status(400).json({ message: "Passwords Don't Match" });
 
-      User.findByIdAndUpdate(
-        { _id: existingUser._id },
-        { $set: { password: hashedPassword } }
-      ).exec((err, res) => {});
+        const hashedPassword = await bcrypt.hash(password, 12);
 
-      return res.json({ successMessage: "Password Reset Successfully" });
+        User.findByIdAndUpdate(
+          { _id: existingUser._id },
+          { $set: { password: hashedPassword } }
+        ).exec((err, res) => {});
+
+        return res.json({ successMessage: "Password Reset Successfully" });
+      }
     }
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });

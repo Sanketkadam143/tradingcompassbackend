@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const orderSchema= mongoose.Schema({
-indexName:String,
+symbol:String,
 stp:Number,
 optionType:String,
 buyPrice:Number,
