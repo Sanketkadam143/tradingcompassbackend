@@ -4,7 +4,6 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import compression from "compression";
 // import apicache from "apicache";
-import nocache from "nocache";
 import { MongoClient } from "mongodb";
 import * as dotenv from "dotenv";
 import apisRoutes from "./routes/apis.js";
@@ -27,9 +26,6 @@ var database;
 // //caching all routes for 5 minutes
 // app.use(cache('5 minutes'))
 
-//disabling client side cache
-app.use(nocache());
-app.set('etag', false);
 
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));

@@ -49,8 +49,22 @@ const bankNiftySchema = mongoose.Schema({
 const bankNiftyoption = mongoose.model("bank nifty option", bankNiftySchema);
 
 export async function getbankNiftyData() {
+
+  let config = {
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8',
+      "Content-Length":"",
+      "Access-Control-Allow-Origin": "*",
+      "Accept":"*/*",
+      "Accept-Encoding":"gzip, deflate, br",
+      "Connection":"keep-alive",
+      "Access-Control-Allow-Origin":"*",
+    }
+  }
+
+
   axios
-    .get(process.env.BANKNIFTY_API)
+    .get(process.env.BANKNIFTY_API,config)
     .then(async (res) => {
       const response = res.data;
       const rawdata = response.filtered?.data;
@@ -136,6 +150,6 @@ export async function getbankNiftyData() {
       }
     })
     .catch((error) => {
-      console.log("no response for bank");
+      console.log("no bank response");
     });
 }

@@ -17,8 +17,22 @@ const livePriceSchema = mongoose.Schema({
 const liveprice = mongoose.model("Index Price", livePriceSchema);
 
 export async function getLivePrice() {
+
+  let config = {
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8',
+      "Content-Length":"",
+      "Access-Control-Allow-Origin": "*",
+      "Accept":"*/*",
+      "Accept-Encoding":"gzip, deflate, br",
+      "Connection":"keep-alive",
+      "Access-Control-Allow-Origin":"*",
+    }
+  }
+
+
   axios
-    .get(process.env.LIVEPRICE_API)
+    .get(process.env.LIVEPRICE_API,config)
     .then(async (res) => {
       const response = await res.data;
       const data = response.data;
@@ -52,6 +66,6 @@ export async function getLivePrice() {
       }
     })
     .catch((error) => {
-      console.log("no response for indexprice");
+      console.log("no index response");
     });
 }

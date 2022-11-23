@@ -32,8 +32,22 @@ const stocksSchema = mongoose.Schema({
 const stocks = mongoose.model("stock", stocksSchema);
 
 export async function getStocks() {
+
+  let config = {
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8',
+      "Content-Length":"",
+      "Access-Control-Allow-Origin": "*",
+      "Accept":"*/*",
+      "Accept-Encoding":"gzip, deflate, br",
+      "Connection":"keep-alive",
+      "Access-Control-Allow-Origin":"*",
+    }
+  }
+
+
   axios
-    .get(process.env.STOCKS_API)
+    .get(process.env.STOCKS_API,config)
     .then(async (res) => {
       const response = await res.data;
       const data = response.data;
