@@ -3,6 +3,8 @@ const app = express();
 import bodyParser from "body-parser";
 import cors from "cors";
 import compression from "compression";
+// import apicache from "apicache";
+import nocache from "nocache";
 import { MongoClient } from "mongodb";
 import * as dotenv from "dotenv";
 import apisRoutes from "./routes/apis.js";
@@ -18,6 +20,16 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const CONNECTION_URL = process.env.CONNECTION_URL;
 var database;
+
+// //configure apicache 
+// let cache = apicache.middleware
+  
+// //caching all routes for 5 minutes
+// app.use(cache('5 minutes'))
+
+//disabling client side cache
+app.use(nocache());
+app.set('etag', false);
 
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
