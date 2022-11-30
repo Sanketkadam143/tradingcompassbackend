@@ -81,7 +81,7 @@ export async function getbankNiftyData() {
         (element) => element?.strikePrice === bankRoundOffPrice
       );
 
-      const data = rawdata?.slice(pricePosition - 20, pricePosition + 22);
+      const data = rawdata?.slice(pricePosition - 10, pricePosition + 12);
 
       if (date !== undefined) {
         try {

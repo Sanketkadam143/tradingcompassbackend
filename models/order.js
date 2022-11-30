@@ -12,6 +12,7 @@ margin:Number,
 sellPrice:Number,
 profit:Number,
 exitTime:String,
+expiryDate:String,
 
 });
 

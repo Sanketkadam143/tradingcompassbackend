@@ -82,7 +82,7 @@ export async function getNiftyData() {
         (element) => element?.strikePrice === niftyRoundOffPrice
       );
 
-      const data = rawdata?.slice(pricePosition - 20, pricePosition + 22);
+      const data = rawdata?.slice(pricePosition - 10, pricePosition + 12);
 
       if (date !== undefined) {
         try {
