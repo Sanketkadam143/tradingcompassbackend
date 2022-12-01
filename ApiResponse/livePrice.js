@@ -5,7 +5,7 @@ dotenv.config();
 
 const livePriceSchema = mongoose.Schema({
   _id: {
-    type: String,
+    type: Date,
     required: true,
   },
   data: {
@@ -36,10 +36,11 @@ export async function getLivePrice() {
     .then(async (res) => {
       const response = await res.data;
       const data = response.data;
+      const timestamp= response["timestamp"];
 
       try {
         const result = await liveprice({
-          _id: response["timestamp"],
+          _id: timestamp,
         });
         await result.save();
         const indexdata = [];
@@ -53,8 +54,8 @@ export async function getLivePrice() {
 
           indexdata.push(livePriceData);
         }
-        await liveprice.findByIdAndUpdate(
-          { _id: response["timestamp"] },
+        await liveprice.findOneAndUpdate(
+          { _id: timestamp },
           {
             $addToSet: {
               data: indexdata,

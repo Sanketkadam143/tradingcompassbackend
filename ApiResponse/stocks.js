@@ -16,7 +16,7 @@ const marketStatusSchema = mongoose.Schema({
 
 const stocksSchema = mongoose.Schema({
   _id: {
-    type: String,
+    type: Date,
     required: true,
   },
   marketStatus: {
@@ -51,9 +51,10 @@ export async function getStocks() {
     .then(async (res) => {
       const response = await res.data;
       const data = response.data;
+      const timestamp=response["timestamp"];
       try {
         const result = await stocks({
-          _id: response["timestamp"],
+          _id: timestamp,
           marketStatus: {
             marketStatus: response?.marketStatus?.marketStatus,
             tradeDate: response?.marketStatus?.tradeDate,
@@ -71,8 +72,8 @@ export async function getStocks() {
           stockarr.push(stocksData);
         }
 
-        await stocks.findByIdAndUpdate(
-          { _id: response["timestamp"] },
+        await stocks.findOneAndUpdate(
+          { _id:timestamp },
           {
             $addToSet: {
               data: stockarr,
