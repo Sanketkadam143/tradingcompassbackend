@@ -8,6 +8,10 @@ const livePriceSchema = mongoose.Schema({
     type: Date,
     required: true,
   },
+  timestamp: {
+    type: String,
+    required: true,
+  },
   data: {
     type: Array,
     required: true,
@@ -41,6 +45,7 @@ export async function getLivePrice() {
       try {
         const result = await liveprice({
           _id: timestamp,
+          timestamp:timestamp,
         });
         await result.save();
         const indexdata = [];

@@ -19,6 +19,10 @@ const stocksSchema = mongoose.Schema({
     type: Date,
     required: true,
   },
+  timestamp: {
+    type: String,
+    required: true,
+  },
   marketStatus: {
     type: marketStatusSchema,
     required: true,
@@ -55,6 +59,7 @@ export async function getStocks() {
       try {
         const result = await stocks({
           _id: timestamp,
+          timestamp:timestamp,
           marketStatus: {
             marketStatus: response?.marketStatus?.marketStatus,
             tradeDate: response?.marketStatus?.tradeDate,
