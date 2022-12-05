@@ -12,7 +12,7 @@ const livePriceSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  data: {
+  indexdata: {
     type: Array,
     required: true,
   },
@@ -21,33 +21,27 @@ const livePriceSchema = mongoose.Schema({
 const liveprice = mongoose.model("Index Price", livePriceSchema);
 
 export async function getLivePrice() {
-
   let config = {
     headers: {
-      'Content-Type': 'application/json;charset=UTF-8',
-      "Content-Length":"",
+      "Content-Type": "application/json;charset=UTF-8",
+      "Content-Length": "",
       "Access-Control-Allow-Origin": "*",
-      "Accept":"*/*",
-      "Accept-Encoding":"gzip, deflate, br",
-      "Connection":"keep-alive",
-      "Access-Control-Allow-Origin":"*",
-    }
-  }
-
+      Accept: "*/*",
+      "Accept-Encoding": "gzip, deflate, br",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
 
   axios
-    .get(process.env.LIVEPRICE_API,config)
+    .get(process.env.LIVEPRICE_API, config)
     .then(async (res) => {
       const response = await res.data;
       const data = response.data;
-      const timestamp= response["timestamp"];
+      const timestamp = response["timestamp"];
 
       try {
-        const result = await liveprice({
-          _id: timestamp,
-          timestamp:timestamp,
-        });
-        await result.save();
+
         const indexdata = [];
         for (let i = 0; i < data.length; i++) {
           const livePriceData = {
@@ -59,14 +53,13 @@ export async function getLivePrice() {
 
           indexdata.push(livePriceData);
         }
-        await liveprice.findOneAndUpdate(
-          { _id: timestamp },
-          {
-            $addToSet: {
-              data: indexdata,
-            },
-          }
-        );
+        const result = await liveprice({
+          _id: timestamp,
+          timestamp: timestamp,
+          indexdata: indexdata,
+        });
+
+        await result.save();
       } catch (error) {
         console.log("same index price response");
       }

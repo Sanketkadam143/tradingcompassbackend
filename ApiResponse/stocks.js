@@ -27,7 +27,7 @@ const stocksSchema = mongoose.Schema({
     type: marketStatusSchema,
     required: true,
   },
-  data: {
+  stockdata: {
     type: Array,
     required: true,
   },
@@ -57,6 +57,17 @@ export async function getStocks() {
       const data = response.data;
       const timestamp=response["timestamp"];
       try {
+        const stockdata = [];
+        for (let i = 0; i < data.length; i++) {
+          const Data = {
+            symbol: data[i]?.symbol,
+            last: data[i]?.lastPrice,
+            variation: data[i]?.change,
+            percentChange: data[i]?.pChange,
+          };
+          stockdata.push(Data);
+        }
+
         const result = await stocks({
           _id: timestamp,
           timestamp:timestamp,
@@ -64,27 +75,10 @@ export async function getStocks() {
             marketStatus: response?.marketStatus?.marketStatus,
             tradeDate: response?.marketStatus?.tradeDate,
           },
+          stockdata:stockdata,
         });
-        await result.save();
-        const stockarr = [];
-        for (let i = 0; i < data.length; i++) {
-          const stocksData = {
-            symbol: data[i]?.symbol,
-            last: data[i]?.lastPrice,
-            variation: data[i]?.change,
-            percentChange: data[i]?.pChange,
-          };
-          stockarr.push(stocksData);
-        }
 
-        await stocks.findOneAndUpdate(
-          { _id:timestamp },
-          {
-            $addToSet: {
-              data: stockarr,
-            },
-          }
-        );
+        await result.save();
       } catch (error) {
         console.log("same stock response");
       }
