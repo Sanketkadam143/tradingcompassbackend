@@ -45,6 +45,7 @@ const niftySchema = mongoose.Schema({
       required: true,
     },
   ],
+  createdAt: { type: Date, expires: "10d", default: Date.now },
 });
 
 const Niftyoption = mongoose.model("nifty option", niftySchema);
@@ -52,20 +53,18 @@ const Niftyoption = mongoose.model("nifty option", niftySchema);
 export async function getNiftyData() {
   let config = {
     headers: {
-      'Content-Type': 'application/json;charset=UTF-8',
-      "Content-Length":"",
+      "Content-Type": "application/json;charset=UTF-8",
+      "Content-Length": "",
       "Access-Control-Allow-Origin": "*",
-      "Accept":"*/*",
-      "Accept-Encoding":"gzip, deflate, br",
-      "Connection":"keep-alive",
-      "Access-Control-Allow-Origin":"*",
-    }
-  }
-
-
+      Accept: "*/*",
+      "Accept-Encoding": "gzip, deflate, br",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
 
   axios
-    .get(process.env.NIFTY_API,config)
+    .get(process.env.NIFTY_API, config)
     .then(async (res) => {
       const response = await res.data;
       const rawdata = response.filtered?.data;

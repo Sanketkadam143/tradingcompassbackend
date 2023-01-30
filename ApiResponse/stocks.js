@@ -31,6 +31,7 @@ const stocksSchema = mongoose.Schema({
     type: Array,
     required: true,
   },
+  createdAt: { type: Date, expires: '10d', default: Date.now }
 });
 
 const stocks = mongoose.model("stock", stocksSchema);

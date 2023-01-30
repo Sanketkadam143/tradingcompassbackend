@@ -45,26 +45,25 @@ const bankNiftySchema = mongoose.Schema({
       required: true,
     },
   ],
+  createdAt: { type: Date, expires: "10d", default: Date.now },
 });
 const bankNiftyoption = mongoose.model("bank nifty option", bankNiftySchema);
 
 export async function getbankNiftyData() {
-
   let config = {
     headers: {
-      'Content-Type': 'application/json;charset=UTF-8',
-      "Content-Length":"",
+      "Content-Type": "application/json;charset=UTF-8",
+      "Content-Length": "",
       "Access-Control-Allow-Origin": "*",
-      "Accept":"*/*",
-      "Accept-Encoding":"gzip, deflate, br",
-      "Connection":"keep-alive",
-      "Access-Control-Allow-Origin":"*",
-    }
-  }
-
+      Accept: "*/*",
+      "Accept-Encoding": "gzip, deflate, br",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+    },
+  };
 
   axios
-    .get(process.env.BANKNIFTY_API,config)
+    .get(process.env.BANKNIFTY_API, config)
     .then(async (res) => {
       const response = res.data;
       const rawdata = response.filtered?.data;

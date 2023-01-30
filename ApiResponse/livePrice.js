@@ -16,6 +16,7 @@ const livePriceSchema = mongoose.Schema({
     type: Array,
     required: true,
   },
+  createdAt: { type: Date, expires: "10d", default: Date.now },
 });
 
 const liveprice = mongoose.model("Index Price", livePriceSchema);
@@ -41,7 +42,6 @@ export async function getLivePrice() {
       const timestamp = response["timestamp"];
 
       try {
-
         const indexdata = [];
         for (let i = 0; i < data.length; i++) {
           const livePriceData = {
