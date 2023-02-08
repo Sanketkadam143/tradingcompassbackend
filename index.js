@@ -53,7 +53,7 @@ db()
     );
     sockets(io, database);
     updateProfit(io, database);
-    //fetchNSE();
+    fetchNSE();
   })
   .catch((error) => {
     console.log(error);
