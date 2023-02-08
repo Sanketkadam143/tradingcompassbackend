@@ -6,7 +6,7 @@ import validator from "validator";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/user.js";
 import OTP from "../models/otp.js";
-import sendmail from "./sendmail.js";
+import sendmail from "../config/sendmail.js";
 
 dotenv.config();
 
@@ -22,7 +22,6 @@ export const signin = async (req, res) => {
   const { email, password } = req.body;
   try {
     const existingUser = await User.findOne({ email });
-
     if (!existingUser)
       return res.status(404).json({ message: "User doesn't exist" });
 
@@ -40,9 +39,15 @@ export const signin = async (req, res) => {
       { expiresIn: JWT_EXPIRE }
     );
 
+    const result = {
+      name: existingUser.name,
+      picture: existingUser.picture,
+      email: existingUser.email,
+    };
+
     res.status(200).json({
       token,
-      result: existingUser,
+      result: result,
       successMessage: "You are Successfully Logged in",
     });
   } catch (error) {
@@ -137,6 +142,11 @@ export const signup = async (req, res) => {
           name: `${firstName} ${lastName}`,
           picture: "",
         });
+        const info = {
+          email: email,
+          name: `${firstName} ${lastName}`,
+          picture: "",
+        };
 
         const token = jwt.sign(
           { email: result.email, id: result._id },
@@ -149,7 +159,7 @@ export const signup = async (req, res) => {
         await sendmail({ userName, email, type: "signUp" });
 
         res.status(200).json({
-          result,
+          result: info,
           token,
           successMessage: "Account created Successfully",
         });
@@ -196,11 +206,11 @@ export const googlesignin = async (req, res) => {
               { expiresIn: JWT_EXPIRE }
             );
 
-            const { email, name, orderDetails, picture, _id } = existingUser;
+            const { email, name, picture } = existingUser;
 
-            return res.json({
+            return res.status(200).json({
               token,
-              result: { name, email, orderDetails, picture, _id },
+              result: { name, email, picture},
               successMessage: "Login with Google successful",
             });
           } else {
@@ -223,7 +233,7 @@ export const googlesignin = async (req, res) => {
                   { expiresIn: JWT_EXPIRE }
                 );
 
-                const { email, name, orderDetails, picture, _id } = newUser;
+                const { email, name, picture} = newUser;
 
                 sendmail({
                   userName: name,
@@ -232,9 +242,9 @@ export const googlesignin = async (req, res) => {
                   password,
                 });
 
-                return res.json({
+                return res.status(200).json({
                   token,
-                  result: { name, email, orderDetails, picture, _id },
+                  result: { name, email, picture },
                   successMessage: `Account successfully created! Check Your Email`,
                 });
               });
@@ -281,7 +291,9 @@ export const resetpassword = async (req, res) => {
 
       await sendmail({ userName, email, type: "resetPassword", generatedOtp });
 
-      return res.json({ successMessage: "OTP Sent on registered Email" });
+      return res
+        .status(200)
+        .json({ successMessage: "OTP Sent on registered Email" });
     }
 
     if (otp && email) {
@@ -293,7 +305,8 @@ export const resetpassword = async (req, res) => {
         return res.status(400).json({ message: "Invalid OTP" });
 
       if (!password) {
-        if (isOtpCorrect) return res.json({ successMessage: "OTP Verified" });
+        if (isOtpCorrect)
+          return res.status(200).json({ successMessage: "OTP Verified" });
       }
 
       if (isOtpCorrect && password) {
@@ -329,7 +342,9 @@ export const resetpassword = async (req, res) => {
           { $set: { password: hashedPassword } }
         ).exec((err, res) => {});
 
-        return res.json({ successMessage: "Password Reset Successfully" });
+        return res
+          .status(200)
+          .json({ successMessage: "Password Reset Successfully" });
       }
     }
   } catch (error) {
