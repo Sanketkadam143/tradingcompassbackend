@@ -40,15 +40,16 @@ export async function getStocks() {
 
   let config = {
     headers: {
-      'Content-Type': 'application/json;charset=UTF-8',
-      "Content-Length":"",
+      "Content-Type": "application/json;charset=UTF-8",
       "Access-Control-Allow-Origin": "*",
-      "Accept":"*/*",
-      "Accept-Encoding":"gzip, deflate, br",
-      "Connection":"keep-alive",
-      "Access-Control-Allow-Origin":"*",
-    }
-  }
+      Accept: "*/*",
+      "Accept-Encoding": "gzip, deflate, br",
+      Connection: "keep-alive",
+      Host: "www.nseindia.com",
+      Cookie: "AKA_A2=A",
+    },
+  };
+  
 
 
   axios

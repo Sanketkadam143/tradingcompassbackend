@@ -54,14 +54,15 @@ export async function getNiftyData() {
   let config = {
     headers: {
       "Content-Type": "application/json;charset=UTF-8",
-      "Content-Length": "",
       "Access-Control-Allow-Origin": "*",
       Accept: "*/*",
       "Accept-Encoding": "gzip, deflate, br",
       Connection: "keep-alive",
-      "Access-Control-Allow-Origin": "*",
+      Host: "www.nseindia.com",
+      Cookie: "AKA_A2=A",
     },
   };
+  
 
   axios
     .get(process.env.NIFTY_API, config)
