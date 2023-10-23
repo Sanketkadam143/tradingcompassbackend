@@ -52,15 +52,14 @@ const bankNiftyoption = mongoose.model("bank nifty option", bankNiftySchema);
 export async function getbankNiftyData() {
   let config = {
     headers: {
-      "Content-Type": "application/json;charset=UTF-8",
-      "Access-Control-Allow-Origin": "*",
-      Accept: "*/*",
-      "Accept-Encoding": "gzip, deflate, br",
-      Connection: "keep-alive",
-      Host: "www.nseindia.com",
-      Cookie: "AKA_A2=A",
+      "Accept": "*/*",  
+      "Connection": "keep-alive",
+      "Host": "www.nseindia.com",
+      "Cookie": "AKA_A2=A",
+      "User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
     },
   };
+  
   
 
   axios
